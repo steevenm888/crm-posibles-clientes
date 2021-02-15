@@ -18,5 +18,4 @@ public interface ClientRepository extends MongoRepository<Client, String>{
     
     Client findById();
     
-    
 }
