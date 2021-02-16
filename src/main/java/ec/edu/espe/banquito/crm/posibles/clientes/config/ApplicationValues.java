@@ -22,7 +22,7 @@ public class ApplicationValues {
     private final String mongoDB;
 
     @Autowired
-    public ApplicationValues(@Value("${personas.mongo.host}") String mongoHost, @Value("${personas.mongo.db}") String mongoDB) {
+    public ApplicationValues(@Value("${clients.mongo.host}") String mongoHost, @Value("${clients.mongo.db}") String mongoDB) {
         this.mongoHost = mongoHost;
         this.mongoDB = mongoDB;
     }

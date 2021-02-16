@@ -51,4 +51,13 @@ public class ClientService {
             throw new DocumentNotFoundException("No se encontro el cliente con id: "+id);
         }
     }
+    
+    public Client obtenerClientePorCedula(String identification) throws DocumentNotFoundException {
+        Optional<Client> client = this.clientRepo.findByIdentification(identification);
+        if(client.isPresent()) {
+            return client.get();
+        } else {
+            throw new DocumentNotFoundException("No se pudo encontrar un cliente con esa cedula "+identification);
+        }
+    }
 }

@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ec.edu.espe.banquito.crm.posibles.clientes.model;
+package ec.edu.espe.banquito.crm.posibles.clientes.api.dto;
 
 import java.util.List;
-import org.springframework.data.annotation.Id;
-import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.mongodb.core.mapping.Document;
+import ec.edu.espe.banquito.crm.posibles.clientes.model.Phone;
+import ec.edu.espe.banquito.crm.posibles.clientes.model.Address;
 
 /**
  *
@@ -17,10 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 
 @Data
-@Builder
-@Document(collection = "client")
-public class Client {
-    @Id
+public class ClientRQ {
     private String id;
     private String identification;
     private String names;
@@ -32,5 +28,4 @@ public class Client {
     private String email;
     private String nationality;
     private String contributor;
-    
 }

@@ -8,6 +8,7 @@ package ec.edu.espe.banquito.crm.posibles.clientes.repository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -17,5 +18,7 @@ public interface ClientRepository extends MongoRepository<Client, String>{
     List<Client> findAll();
     
     Client findById();
+    
+    Optional<Client> findByIdentification(String identification);
     
 }
