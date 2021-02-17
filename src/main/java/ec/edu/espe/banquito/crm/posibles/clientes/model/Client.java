@@ -31,6 +31,5 @@ public class Client {
     private List<Address> addresses;
     private String email;
     private String nationality;
-    private String contributor;
     
 }

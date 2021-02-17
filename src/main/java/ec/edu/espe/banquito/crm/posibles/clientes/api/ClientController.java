@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRQ;
+import ec.edu.espe.banquito.crm.posibles.clientes.enums.GenreEnum;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -71,8 +72,7 @@ public class ClientController {
                                       .phones(client.getPhones())
                                       .addresses(client.getAddresses())
                                       .email(client.getEmail())
-                                      .nationality(client.getNationality())
-                                      .contributor(client.getContributor()).build());
+                                      .nationality(client.getNationality()).build());
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
             return ResponseEntity.badRequest().build();
@@ -88,13 +88,12 @@ public class ClientController {
                                       .identification(client.getIdentification())
                                       .names(client.getNames())
                                       .surnames(client.getSurnames())
-                                      .genre(client.getGenre())
+                                      .genre(GenreEnum.valueOf(client.getGenre()).getCode())
                                       .birthdate(client.getBirthdate())
                                       .phones(client.getPhones())
                                       .addresses(client.getAddresses())
                                       .email(client.getEmail())
-                                      .nationality(client.getNationality())
-                                      .contributor(client.getContributor()).build());
+                                      .nationality(client.getNationality()).build());
             }
             this.service.crearVariosClientes(clientsList);
             return ResponseEntity.ok().build();

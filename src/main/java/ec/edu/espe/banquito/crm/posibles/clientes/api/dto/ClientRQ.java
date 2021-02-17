@@ -27,5 +27,4 @@ public class ClientRQ {
     private List<Address> addresses;
     private String email;
     private String nationality;
-    private String contributor;
 }
