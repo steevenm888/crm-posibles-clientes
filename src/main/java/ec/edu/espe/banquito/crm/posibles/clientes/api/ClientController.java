@@ -41,7 +41,7 @@ public class ClientController {
         return ResponseEntity.ok(this.service.listarClientes());
     }
     
-    @GetMapping(path = "/{id}")
+    @GetMapping(path = "/id/{id}")
     public ResponseEntity listarPorId(@PathVariable("id") String id) {
         try {
             return ResponseEntity.ok(this.service.obtenerClientePorId(id));
@@ -50,7 +50,7 @@ public class ClientController {
         }
     }
     
-    @GetMapping(path = "/{identification}")
+    @GetMapping(path = "/cedula/{identification}")
     public ResponseEntity listarPorCedula(@PathVariable("identification") String identification) {
         try {
             return ResponseEntity.ok(this.service.obtenerClientePorCedula(identification));
