@@ -36,12 +36,12 @@ public class ClientController {
         this.service = service;
     }
     
-    @GetMapping(path = "/{identification}")
+    @GetMapping
     public ResponseEntity listarTodos() {
         return ResponseEntity.ok(this.service.listarClientes());
     }
     
-    @GetMapping
+    @GetMapping(path = "/{id}")
     public ResponseEntity listarPorId(@PathVariable("id") String id) {
         try {
             return ResponseEntity.ok(this.service.obtenerClientePorId(id));
@@ -79,8 +79,8 @@ public class ClientController {
         }
     }
     
-    @PostMapping
-    public ResponseEntity crear(@RequestBody List<ClientRQ> clients) {
+    @PostMapping("/varios")
+    public ResponseEntity crearVarios(@RequestBody List<ClientRQ> clients) {
         try {
             List<Client> clientsList = new ArrayList<>();
             for (ClientRQ client : clients) {

@@ -40,7 +40,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Override
     public MongoClient mongoClient() {
-        log.info("Valores de propiedades: {}-{}",this.appValues.getMongoHost(), this.appValues.getMongoDB());
+        log.info("Valores de propiedades: {}/{}",this.appValues.getMongoHost(), this.appValues.getMongoDB());
         return MongoClients.create("mongodb://"+ this.appValues.getMongoHost() + "/" + this.appValues.getMongoDB());
     }
     

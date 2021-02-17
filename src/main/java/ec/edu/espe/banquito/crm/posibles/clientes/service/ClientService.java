@@ -11,11 +11,14 @@ import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundExce
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author esteban
  */
+
+@Service
 public class ClientService {
     private final ClientRepository clientRepo;
     
