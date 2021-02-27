@@ -124,6 +124,9 @@ public class ClientController {
             } else if(clientNamesSurnames.getNames() == null && clientNamesSurnames.getSurnames() != null) {
                 log.info("Retrieved all clients with {} in it's surnames", clientNamesSurnames.getSurnames());
                 return ResponseEntity.ok(this.service.getClientsBySurnames(clientNamesSurnames.getSurnames()));
+            } else if(clientNamesSurnames.getNames() != null && clientNamesSurnames.getSurnames() != null) {
+                log.info("Retrieved all clients with {} {} in it's names and surnames", clientNamesSurnames.getSurnames());
+                return ResponseEntity.ok(this.service.getClientByNamesAndSurnames(clientNamesSurnames.getNames(), clientNamesSurnames.getSurnames()));
             } else {
                 log.error("Not enough data to perform the search");
                 return ResponseEntity.badRequest().build();
