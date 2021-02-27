@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
 import java.util.ArrayList;
 import java.util.List;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientNamesSurnamesRQ;
+import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -103,11 +106,32 @@ public class ClientController {
     }
     
     @GetMapping("/byEmail")
-    public ResponseEntity getClientsByEmail(String email) {
+    public ResponseEntity getClientsByEmail(@RequestParam String email) {
         try {
             log.info("Retrived all clients with email: {}", email);
             return ResponseEntity.ok(this.service.getClientByEmail(email));
         } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @GetMapping("/byNamesSurnames")
+    public ResponseEntity getClientsByNamesSrunames(@RequestBody ClientNamesSurnamesRQ clientNamesSurnames) {
+        try {
+            if(clientNamesSurnames.getNames() != null && clientNamesSurnames.getSurnames() == null){
+                log.info("Retrieved all clients named as {}", clientNamesSurnames.getNames());
+                return ResponseEntity.ok(this.service.getClientsByNames(clientNamesSurnames.getNames()));
+            } else if(clientNamesSurnames.getNames() == null && clientNamesSurnames.getSurnames() != null) {
+                log.info("Retrieved all clients with {} in it's surnames", clientNamesSurnames.getSurnames());
+                return ResponseEntity.ok(this.service.getClientsBySurnames(clientNamesSurnames.getSurnames()));
+            } else if(clientNamesSurnames.getNames() != null && clientNamesSurnames.getSurnames() != null) {
+                log.info("Retrieved all clients with {} {} in it's names and surnames", clientNamesSurnames.getSurnames());
+                return ResponseEntity.ok(this.service.getClientByNamesAndSurnames(clientNamesSurnames.getNames(), clientNamesSurnames.getSurnames()));
+            } else {
+                log.error("Not enough data to perform the search");
+                return ResponseEntity.badRequest().build();
+            }
+        } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }

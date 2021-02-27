@@ -76,4 +76,34 @@ public class ClientService {
             throw new NotFoundException("Couldn't find any clients with this email: "+email);
         }
     }
+    
+    public List<Client> getClientsByNames(String names) throws NotFoundException {
+        List<Client> clients = this.clientRepo.findByNamesLike(names);
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            log.info("Couldn't find clients named as {}", names);
+            throw new NotFoundException("Couldn't find clients names as "+names);
+        }
+    }
+    
+    public List<Client> getClientsBySurnames(String surnames) throws NotFoundException {
+        List<Client> clients = this.clientRepo.findBySurnamesLike(surnames);
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            log.info("Couldn't find any clients with {} in its surname", surnames);
+            throw new NotFoundException("Couldn't find any clients with "+surnames+" in its surname");
+        }
+    }
+    
+    public List<Client> getClientByNamesAndSurnames(String names, String surnames) throws NotFoundException {
+        List<Client> clients = this.clientRepo.findByNamesAndSurnamesLike(names, surnames);
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            log.info("Couldn't find a client that matches {} {} in it's names and surnames");
+            throw new NotFoundException("Couldn't find a client that matches "+names+" "+surnames+" in it's names and surnames");
+        }
+    }
 }
