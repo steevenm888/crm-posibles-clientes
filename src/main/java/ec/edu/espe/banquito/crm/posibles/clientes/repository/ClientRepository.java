@@ -23,4 +23,6 @@ public interface ClientRepository extends MongoRepository<Client, String>{
     
     List<Client> findByEmail(String email);
     
+    List<Client> findByNamesLike(String names);
+    
 }

@@ -76,4 +76,14 @@ public class ClientService {
             throw new NotFoundException("Couldn't find any clients with this email: "+email);
         }
     }
+    
+    public List<Client> getClientsByNames(String names) throws NotFoundException {
+        List<Client> clients = this.clientRepo.findByNamesLike(names);
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            log.info("Couldn't find clients names as {}", names);
+            throw new NotFoundException("Couldn't find clients names as "+names);
+        }
+    }
 }

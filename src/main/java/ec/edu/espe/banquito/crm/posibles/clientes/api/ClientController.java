@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
 import java.util.ArrayList;
 import java.util.List;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientNamesSurnamesRQ;
+import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -103,11 +106,21 @@ public class ClientController {
     }
     
     @GetMapping("/byEmail")
-    public ResponseEntity getClientsByEmail(String email) {
+    public ResponseEntity getClientsByEmail(@RequestParam String email) {
         try {
             log.info("Retrived all clients with email: {}", email);
             return ResponseEntity.ok(this.service.getClientByEmail(email));
         } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @GetMapping(path = "/byNamesSurnames", consumes = "application/json")
+    public ResponseEntity getClientsByNamesSrunames(@RequestBody ClientNamesSurnamesRQ clientNamesSurnames) {
+        try {
+            log.info("Retrieved all clients named as {}", clientNamesSurnames.getNames());
+            return ResponseEntity.ok(this.service.getClientsByNames(clientNamesSurnames.getNames()));
+        } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
