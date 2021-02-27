@@ -115,11 +115,19 @@ public class ClientController {
         }
     }
     
-    @GetMapping(path = "/byNamesSurnames", consumes = "application/json")
+    @GetMapping("/byNamesSurnames")
     public ResponseEntity getClientsByNamesSrunames(@RequestBody ClientNamesSurnamesRQ clientNamesSurnames) {
         try {
-            log.info("Retrieved all clients named as {}", clientNamesSurnames.getNames());
-            return ResponseEntity.ok(this.service.getClientsByNames(clientNamesSurnames.getNames()));
+            if(clientNamesSurnames.getNames() != null && clientNamesSurnames.getSurnames() == null){
+                log.info("Retrieved all clients named as {}", clientNamesSurnames.getNames());
+                return ResponseEntity.ok(this.service.getClientsByNames(clientNamesSurnames.getNames()));
+            } else if(clientNamesSurnames.getNames() == null && clientNamesSurnames.getSurnames() != null) {
+                log.info("Retrieved all clients with {} in it's surnames", clientNamesSurnames.getSurnames());
+                return ResponseEntity.ok(this.service.getClientsBySurnames(clientNamesSurnames.getSurnames()));
+            } else {
+                log.error("Not enough data to perform the search");
+                return ResponseEntity.badRequest().build();
+            }
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         }

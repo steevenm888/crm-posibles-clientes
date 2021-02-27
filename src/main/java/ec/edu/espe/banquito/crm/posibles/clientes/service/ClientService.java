@@ -82,8 +82,18 @@ public class ClientService {
         if(!clients.isEmpty()) {
             return clients;
         } else {
-            log.info("Couldn't find clients names as {}", names);
+            log.info("Couldn't find clients named as {}", names);
             throw new NotFoundException("Couldn't find clients names as "+names);
+        }
+    }
+    
+    public List<Client> getClientsBySurnames(String surnames) throws NotFoundException {
+        List<Client> clients = this.clientRepo.findBySurnamesLike(surnames);
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            log.info("Couldn't find any clients with {} in its surname", surnames);
+            throw new NotFoundException("Couldn't find any clients with "+surnames+" in its surname");
         }
     }
 }
