@@ -79,6 +79,8 @@ public class ClientController {
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
             return ResponseEntity.badRequest().build();
+        } catch (DocumentNotFoundException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
     
@@ -101,6 +103,8 @@ public class ClientController {
             this.service.crearVariosClientes(clientsList);
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (DocumentNotFoundException e) {
             return ResponseEntity.badRequest().build();
         }
     }
