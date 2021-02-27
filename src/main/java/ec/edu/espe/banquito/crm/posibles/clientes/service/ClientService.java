@@ -9,8 +9,10 @@ import ec.edu.espe.banquito.crm.posibles.clientes.repository.ClientRepository;
 import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
+import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
+@Slf4j
 public class ClientService {
     private final ClientRepository clientRepo;
     
@@ -61,6 +64,16 @@ public class ClientService {
             return client.get();
         } else {
             throw new DocumentNotFoundException("No se pudo encontrar un cliente con esa cedula "+identification);
+        }
+    }
+    
+    public List<Client> getClientByEmail(String email) throws NotFoundException {
+        List<Client> clients = this.clientRepo.findByEmail(email);
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            log.info("Couldn't find clients with this email: {}", email);
+            throw new NotFoundException("Couldn't find any clients with this email: "+email);
         }
     }
 }

@@ -101,4 +101,14 @@ public class ClientController {
             return ResponseEntity.badRequest().build();
         }
     }
+    
+    @GetMapping("/byEmail")
+    public ResponseEntity getClientsByEmail(String email) {
+        try {
+            log.info("Retrived all clients with email: {}", email);
+            return ResponseEntity.ok(this.service.getClientByEmail(email));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
