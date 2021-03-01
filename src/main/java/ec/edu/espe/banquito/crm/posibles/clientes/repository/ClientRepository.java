@@ -27,6 +27,6 @@ public interface ClientRepository extends MongoRepository<Client, String>{
     
     List<Client> findBySurnamesLike(String Surnames);
     
-    List<Client> findByNamesAndSurnamesLike(String names, String surnames);
+    List<Client> findByNamesIgnoringCaseLikeAndSurnamesIgnoringCaseLike(String names, String surnames);
     
 }
