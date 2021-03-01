@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRS;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRQ;
-import ec.edu.espe.banquito.crm.posibles.clientes.enums.GenreEnum;
+import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +26,8 @@ import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import kong.unirest.GenericType;
+import kong.unirest.Unirest;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 /**
@@ -92,59 +95,12 @@ public class ClientController {
                     .surnames(client.getSurnames())
                     .genre(client.getGenre())
                     .birthdate(client.getBirthdate())
-                    .phones(client.getPhones())
-                    .addresses(client.getAddresses())
-                    .email(client.getEmail())
                     .nationality(client.getNationality()).build());
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
             return ResponseEntity.badRequest().build();
         } catch (DocumentNotFoundException e) {
             return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PostMapping("/varios")
-    @ApiOperation(value = "Create various clients")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Created successfully"),
-        @ApiResponse(code = 400, message = "The data passed is not correct format"),
-        @ApiResponse(code = 404, message = "Not Found")})
-    public ResponseEntity crearVarios(@RequestBody List<ClientRQ> clients) {
-        try {
-            List<Client> clientsList = new ArrayList<>();
-            for (ClientRQ client : clients) {
-                clientsList.add(Client.builder()
-                        .identification(client.getIdentification())
-                        .names(client.getNames())
-                        .surnames(client.getSurnames())
-                        .genre(GenreEnum.valueOf(client.getGenre()).getCode())
-                        .birthdate(client.getBirthdate())
-                        .phones(client.getPhones())
-                        .addresses(client.getAddresses())
-                        .email(client.getEmail())
-                        .nationality(client.getNationality()).build());
-            }
-            this.service.crearVariosClientes(clientsList);
-            return ResponseEntity.ok().build();
-        } catch (InsertException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (DocumentNotFoundException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/byEmail/{email}")
-    @ApiOperation(value = "Find client by email")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Registries Found"),
-        @ApiResponse(code = 404, message = "Not Found")})
-    public ResponseEntity<List<Client>> getClientsByEmail(@PathVariable String email) {
-        try {
-            log.info("Retrived all clients with email: {}", email);
-            return ResponseEntity.ok(this.service.getClientByEmail(email));
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
         }
     }
 
@@ -172,5 +128,47 @@ public class ClientController {
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/createClientsFromBuroRating")
+    @ApiOperation(value = "Create various clients from Buro with given rating")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Created successfully"),
+        @ApiResponse(code = 400, message = "The data passed is not correct in format"),
+        @ApiResponse(code = 404, message = "No data found in Buro")})
+    public ResponseEntity createClientsFromBuro(@RequestBody String rating) {
+        List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/calificacion/{rating}")
+                .routeParam("rating", rating)
+                .asObject(new GenericType<List<BuroRS>>() {
+                })
+                .getBody();
+        ResponseEntity response;
+        if (responseBody != null && responseBody.size() > 0) {
+            List<Client> clientsList = new ArrayList<>();
+            for (BuroRS client : responseBody) {
+                clientsList.add(Client.builder()
+                        .identification(client.getPersona().getCedula())
+                        .names(client.getPersona().getNombres())
+                        .surnames(client.getPersona().getApellidos())
+                        .genre(client.getPersona().getGenero())
+                        .birthdate(client.getPersona().getFechaNacimiento())
+                        .nationality(client.getPersona().getNacionalidad().getNombre())
+                        .rating(client.getCalificacion())
+                        .amountOwed(client.getCantidadAdeudada())
+                        .alternateRating(client.getCalificacionAlterna())
+                        .build());
+            }
+            try {
+                this.service.crearVariosClientes(clientsList);
+                response = ResponseEntity.ok().build();
+            } catch (InsertException e) {
+                response = ResponseEntity.badRequest().build();
+            } catch (DocumentAlreadyExistsException e) {
+                response = ResponseEntity.badRequest().build();
+            }
+        } else {
+            response = ResponseEntity.notFound().build();;
+        }
+        return response;
     }
 }

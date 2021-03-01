@@ -48,20 +48,22 @@ public class ClientService {
         }
     }
 
-    public void crearVariosClientes(List<Client> clients) throws InsertException, DocumentNotFoundException {
+    public void crearVariosClientes(List<Client> clients) throws InsertException, DocumentAlreadyExistsException {
         Integer originalClientsSize = clients.size();
         List<String> identifications = new ArrayList<>();
-        if (clients.size() <= 100) {
-            for (Client client : clients) {
+        List<Client> clientsToRemove = new ArrayList<>();
+        if (clients.size() > 0 && clients.size() <= 100) {
+            clients.forEach(client -> {
                 Optional<Client> searchedClient = this.clientRepo.findByIdentification(client.getIdentification());
                 if (searchedClient.isPresent()) {
-                    clients.remove(client);
+                    clientsToRemove.add(client);
                     identifications.add(client.getIdentification());
                 }
-            }
+            });
+            clients.removeAll(clientsToRemove);
             this.clientRepo.saveAll(clients);
             if (clients.size() < originalClientsSize) {
-                log.error("Couldn't insert all the registries, only {}"
+                log.error("Couldn't insert all the registries, only {} "
                         + "There was problems with the following identifications which already exist in other registries: {}",
                         clients.size(), identifications.toString());
                 throw new DocumentAlreadyExistsException("Couldn't insert all the registries, only " + clients.size() + ""
@@ -89,16 +91,6 @@ public class ClientService {
             return client.get();
         } else {
             throw new DocumentNotFoundException("No se pudo encontrar un cliente con esa cedula " + identification);
-        }
-    }
-
-    public List<Client> getClientByEmail(String email) throws NotFoundException {
-        List<Client> clients = this.clientRepo.findByEmail(email);
-        if (!clients.isEmpty()) {
-            return clients;
-        } else {
-            log.info("Couldn't find clients with this email: {}", email);
-            throw new NotFoundException("Couldn't find any clients with this email: " + email);
         }
     }
 
@@ -131,4 +123,5 @@ public class ClientService {
             throw new NotFoundException("Couldn't find a client that matches " + names + " " + surnames + " in it's names and surnames");
         }
     }
+
 }
