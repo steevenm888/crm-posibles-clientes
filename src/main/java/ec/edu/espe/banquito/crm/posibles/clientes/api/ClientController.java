@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRS;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRQ;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.RatingOwedRQ;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
@@ -26,6 +27,7 @@ import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.math.BigDecimal;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestParam;
 import kong.unirest.GenericType;
@@ -36,7 +38,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  *
  * @author esteban
  */
-
 @CrossOrigin
 @RestController
 @RequestMapping("/api/possible-clients")
@@ -51,9 +52,10 @@ public class ClientController {
 
     @GetMapping
     @ApiOperation(value = "List all possible clients")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "All possible clients listed"),
-                            @ApiResponse(code = 204, message = "There are no registries to show"),
-                            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "All possible clients listed"),
+        @ApiResponse(code = 204, message = "There are no registries to show"),
+        @ApiResponse(code = 500, message = "Internal server error")})
     public ResponseEntity<List<Client>> listarTodos() {
         try {
             return ResponseEntity.ok(this.service.getAllClientes());
@@ -63,28 +65,30 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     @GetMapping(path = "/{id}")
     @ApiOperation(value = "Listar posible cliente por su id")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible client with sent id found"),
-                            @ApiResponse(code = 404, message = "No possible client with sent id found"),
-                            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Possible client with sent id found"),
+        @ApiResponse(code = 404, message = "No possible client with sent id found"),
+        @ApiResponse(code = 500, message = "Internal server error")})
     public ResponseEntity<Client> getById(@PathVariable("id") String id) {
 
         try {
             return ResponseEntity.ok(this.service.getClientById(id));
         } catch (DocumentNotFoundException e) {
             return ResponseEntity.notFound().build();
-        } catch (Exception  e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     @GetMapping(path = "/identification/{identification}")
     @ApiOperation(value = "Listar posible cliente por su cedula")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible client with sent identification found"),
-                            @ApiResponse(code = 404, message = "No possible client found with sent id"),
-                            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Possible client with sent identification found"),
+        @ApiResponse(code = 404, message = "No possible client found with sent id"),
+        @ApiResponse(code = 500, message = "Internal server error")})
     public ResponseEntity<Client> getByIdentification(@PathVariable("identification") String identification) {
         try {
             return ResponseEntity.ok(this.service.getClientByIdentification(identification));
@@ -155,7 +159,7 @@ public class ClientController {
         @ApiResponse(code = 200, message = "Created successfully"),
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
-    public ResponseEntity createClientsFromBuro(@RequestBody String rating) {
+    public ResponseEntity<List<Client>> createClientsFromBuroRating(@RequestBody String rating) {
         List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/calificacion/{rating}")
                 .routeParam("rating", rating)
                 .asObject(new GenericType<List<BuroRS>>() {
@@ -163,23 +167,67 @@ public class ClientController {
                 .getBody();
         ResponseEntity response;
         if (responseBody != null && responseBody.size() > 0) {
-            List<Client> clientsList = new ArrayList<>();
-            for (BuroRS client : responseBody) {
-                clientsList.add(Client.builder()
-                        .identification(client.getPersona().getCedula())
-                        .names(client.getPersona().getNombres())
-                        .surnames(client.getPersona().getApellidos())
-                        .genre(client.getPersona().getGenero())
-                        .birthdate(client.getPersona().getFechaNacimiento())
-                        .nationality(client.getPersona().getNacionalidad().getNombre())
-                        .rating(client.getCalificacion())
-                        .amountOwed(client.getCantidadAdeudada())
-                        .alternateRating(client.getCalificacionAlterna())
-                        .build());
-            }
+            List<Client> clientsList = this.service.transformBuroRsToClient(responseBody);
             try {
-                this.service.createSeveralClients(clientsList);
-                response = ResponseEntity.ok().build();
+                response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
+            } catch (InsertException e) {
+                response = ResponseEntity.badRequest().build();
+            } catch (DocumentAlreadyExistsException e) {
+                response = ResponseEntity.badRequest().build();
+            }
+        } else {
+            response = ResponseEntity.notFound().build();;
+        }
+        return response;
+    }
+
+    @PostMapping("/createClientsFromBuroOwed")
+    @ApiOperation(value = "Create various clients from Buro that owe less than given value")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Created successfully"),
+        @ApiResponse(code = 400, message = "The data passed is not correct in format"),
+        @ApiResponse(code = 404, message = "No data found in Buro")})
+    public ResponseEntity<List<Client>> createClientsFromBuroOwed(@RequestBody BigDecimal amountOwed) {
+        List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/cantidadAdeudada/{amountOwed}")
+                .routeParam("amountOwed", amountOwed.toString())
+                .asObject(new GenericType<List<BuroRS>>() {
+                })
+                .getBody();
+        ResponseEntity response;
+        if (responseBody != null && responseBody.size() > 0) {
+            List<Client> clientsList = this.service.transformBuroRsToClient(responseBody);
+            try {
+                response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
+            } catch (InsertException e) {
+                response = ResponseEntity.badRequest().build();
+            } catch (DocumentAlreadyExistsException e) {
+                response = ResponseEntity.notFound().build();
+            }
+        } else {
+            response = ResponseEntity.notFound().build();;
+        }
+        return response;
+    }
+
+    @PostMapping("/createClientsFromBuroOwedAndRating")
+    @ApiOperation(value = "Create various clients from Buro that owe less than given value and have the given rating")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Created successfully"),
+        @ApiResponse(code = 400, message = "The data passed is not correct in format"),
+        @ApiResponse(code = 404, message = "No data found in Buro")})
+    public ResponseEntity<List<Client>> createClientsFromBuroOwedAndRating(@RequestBody RatingOwedRQ ratingOwedRq) {
+        List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+                .queryString("calificacion", ratingOwedRq.getRating())
+                .queryString("cantidadAdeudada", ratingOwedRq.getAmountOwed())
+                .asObject(new GenericType<List<BuroRS>>() {
+                })
+                .getBody();
+        log.info("Data retrieved from buro {}", responseBody);
+        ResponseEntity response;
+        if (responseBody != null && responseBody.size() > 0) {
+            List<Client> clientsList = this.service.transformBuroRsToClient(responseBody);
+            try {
+                response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
             } catch (InsertException e) {
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
