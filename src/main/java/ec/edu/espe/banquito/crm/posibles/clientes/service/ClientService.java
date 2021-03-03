@@ -86,6 +86,7 @@ public class ClientService {
         if (client.isPresent()) {
             return client.get();
         } else {
+            log.info("Couldn't find a client with the id {}", id);
             throw new DocumentNotFoundException("Couldn't find a client with the id: "+id);
         }
     }
@@ -95,7 +96,8 @@ public class ClientService {
         if (client.isPresent()) {
             return client.get();
         } else {
-            throw new DocumentNotFoundException("No se pudo encontrar un cliente con esa cedula " + identification);
+            log.info("Couldn't find a client with {} as identification.", identification);
+            throw new DocumentNotFoundException("Couldn't find possible client with identification " + identification);
         }
     }
 
