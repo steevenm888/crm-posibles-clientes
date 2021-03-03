@@ -104,7 +104,7 @@ public class ClientController {
         @ApiResponse(code = 500, message = "Internalserver error")})
     public ResponseEntity crear(@RequestBody ClientRQ client) {
         try {
-            this.service.crearCliente(Client.builder()
+            this.service.createClient(Client.builder()
                     .identification(client.getIdentification())
                     .names(client.getNames())
                     .surnames(client.getSurnames())
@@ -116,22 +116,6 @@ public class ClientController {
             return ResponseEntity.badRequest().build();
         } catch (DocumentNotFoundException e) {
             return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    
-    @GetMapping("/byEmail")
-    @ApiOperation(value = "Get possible clients by email")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible clients with sent email found"),
-                            @ApiResponse(code = 404, message = "Possible clients with sent email not found"),
-                            @ApiResponse(code = 500, message = "Internal server error")})
-    public ResponseEntity<List<Client>> getClientsByEmail(@RequestParam String email) {
-        try {
-            log.info("Retrived all clients with email: {}", email);
-            return ResponseEntity.ok(this.service.getClientByEmail(email));
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -194,7 +178,7 @@ public class ClientController {
                         .build());
             }
             try {
-                this.service.crearVariosClientes(clientsList);
+                this.service.createSeveralClients(clientsList);
                 response = ResponseEntity.ok().build();
             } catch (InsertException e) {
                 response = ResponseEntity.badRequest().build();
