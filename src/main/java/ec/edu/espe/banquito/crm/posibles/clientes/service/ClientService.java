@@ -29,18 +29,23 @@ public class ClientService {
         this.clientRepo = clientRepo;
     }
     
-    public List<Client> listarClientes() {
-        return this.clientRepo.findAll();
+    public List<Client> getAllClientes() throws NotFoundException {
+        List<Client> clients = this.clientRepo.findAll();
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            throw new NotFoundException("There are no clients in the data base yet.");
+        }
     }
     
-    public void crearCliente(Client client) throws InsertException {
+    public void createClient(Client client) throws InsertException {
         Client clientSaved = this.clientRepo.save(client);
         if(clientSaved == null) {
             throw new InsertException("client", "No se pudo ingresar el cliente");
         }
     }
     
-    public void crearVariosClientes(List<Client> clients) throws InsertException {
+    public void createSeveralClients(List<Client> clients) throws InsertException {
         if(clients.size() <= 100) {
             this.clientRepo.saveAll(clients);
         } else {
@@ -49,16 +54,16 @@ public class ClientService {
         }
     }
     
-    public Client obtenerClientePorId(String id) throws DocumentNotFoundException {
+    public Client getClientById(String id) throws DocumentNotFoundException {
         Optional<Client> client = this.clientRepo.findById(id);
         if(client.isPresent()) {
             return client.get();
         } else {
-            throw new DocumentNotFoundException("No se encontro el cliente con id: "+id);
+            throw new DocumentNotFoundException("Couldn't find a client with the id: "+id);
         }
     }
     
-    public Client obtenerClientePorCedula(String identification) throws DocumentNotFoundException {
+    public Client getClientByIdentification(String identification) throws DocumentNotFoundException {
         Optional<Client> client = this.clientRepo.findByIdentification(identification);
         if(client.isPresent()) {
             return client.get();

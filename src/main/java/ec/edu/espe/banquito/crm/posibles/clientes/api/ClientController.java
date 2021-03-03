@@ -23,6 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientNamesSurnamesRQ;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -30,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @author esteban
  */
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/posibles-clientes/cliente")
 @Slf4j
@@ -41,32 +47,58 @@ public class ClientController {
     }
     
     @GetMapping
-    public ResponseEntity listarTodos() {
-        return ResponseEntity.ok(this.service.listarClientes());
+    @ApiOperation(value = "Listar todos los posibles clientes")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Todos los posibles clientes listados"),
+                            @ApiResponse(code = 204, message = "No existe ningún registro a mostrarse"),
+                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    public ResponseEntity<List<Client>> listarTodos() {
+        try {
+            return ResponseEntity.ok(this.service.getAllClientes());
+        } catch (NotFoundException e) {
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
     
     @GetMapping(path = "/id/{id}")
-    public ResponseEntity listarPorId(@PathVariable("id") String id) {
+    @ApiOperation(value = "Listar posible cliente por su id")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Posible cliente con el id enviado fue encontrado"),
+                            @ApiResponse(code = 404, message = "No se encontró ningún posible cliente con el id enviado"),
+                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    public ResponseEntity<Client> getById(@PathVariable("id") String id) {
         try {
-            return ResponseEntity.ok(this.service.obtenerClientePorId(id));
+            return ResponseEntity.ok(this.service.getClientById(id));
         } catch (DocumentNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception  e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
     @GetMapping(path = "/cedula/{identification}")
-    public ResponseEntity listarPorCedula(@PathVariable("identification") String identification) {
+    @ApiOperation(value = "Listar posible cliente por su cedula")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Posible cliente con la cedula enviado fue encontrado"),
+                            @ApiResponse(code = 404, message = "No se encontró ningún posible cliente con el id enviado"),
+                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    public ResponseEntity<Client> getByCedula(@PathVariable("identification") String identification) {
         try {
-            return ResponseEntity.ok(this.service.obtenerClientePorCedula(identification));
+            return ResponseEntity.ok(this.service.getClientByIdentification(identification));
         } catch (DocumentNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
     @PostMapping
+    @ApiOperation(value = "Crear posible cliente")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Posible cliente creado"),
+                            @ApiResponse(code = 400, message = "Datos enviados erroneamente, error al insertar"),
+                            @ApiResponse(code = 500, message = "Error interno del servidor")})
     public ResponseEntity crear(@RequestBody ClientRQ client) {
         try {
-            this.service.crearCliente(Client.builder()
+            this.service.createClient(Client.builder()
                                       .identification(client.getIdentification())
                                       .names(client.getNames())
                                       .surnames(client.getSurnames())
@@ -79,11 +111,17 @@ public class ClientController {
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
             return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
     @PostMapping("/varios")
-    public ResponseEntity crearVarios(@RequestBody List<ClientRQ> clients) {
+    @ApiOperation(value = "Crear posible cliente")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Lista de posibles clientes guardada"),
+                            @ApiResponse(code = 400, message = "Lista de posibles clientes con problemas"),
+                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    public ResponseEntity createSeveral(@RequestBody List<ClientRQ> clients) {
         try {
             List<Client> clientsList = new ArrayList<>();
             for (ClientRQ client : clients) {
@@ -98,25 +136,37 @@ public class ClientController {
                                       .email(client.getEmail())
                                       .nationality(client.getNationality()).build());
             }
-            this.service.crearVariosClientes(clientsList);
+            this.service.createSeveralClients(clientsList);
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
             return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
     @GetMapping("/byEmail")
-    public ResponseEntity getClientsByEmail(@RequestParam String email) {
+    @ApiOperation(value = "Obtener lista de posibles clientes por email")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Lista de posibles clientes por email encontrada"),
+                            @ApiResponse(code = 404, message = "Clientes con el email especificado no encontrados"),
+                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    public ResponseEntity<List<Client>> getClientsByEmail(@RequestParam String email) {
         try {
             log.info("Retrived all clients with email: {}", email);
             return ResponseEntity.ok(this.service.getClientByEmail(email));
-        } catch (Exception e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
     @GetMapping("/byNamesSurnames")
-    public ResponseEntity getClientsByNamesSrunames(@RequestBody ClientNamesSurnamesRQ clientNamesSurnames) {
+    @ApiOperation(value = "Obtener lista de posibles clientes por nombres y apellidos")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Lista de posibles clientes por nombres y apellidos no encontrada"),
+                            @ApiResponse(code = 404, message = "Clientes con el email especificado no encontrados"),
+                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    public ResponseEntity<List<Client>> getClientsByNamesSrunames(@RequestBody ClientNamesSurnamesRQ clientNamesSurnames) {
         try {
             if(clientNamesSurnames.getNames() != null && clientNamesSurnames.getSurnames() == null){
                 log.info("Retrieved all clients named as {}", clientNamesSurnames.getNames());
@@ -133,6 +183,8 @@ public class ClientController {
             }
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
