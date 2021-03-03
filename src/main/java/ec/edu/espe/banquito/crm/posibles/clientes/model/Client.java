@@ -5,7 +5,7 @@
  */
 package ec.edu.espe.banquito.crm.posibles.clientes.model;
 
-import java.util.List;
+import java.math.BigDecimal;
 import org.springframework.data.annotation.Id;
 import lombok.Builder;
 import lombok.Data;
@@ -15,11 +15,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *
  * @author esteban
  */
-
 @Data
 @Builder
 @Document(collection = "client")
 public class Client {
+
     @Id
     private String id;
     private String identification;
@@ -27,9 +27,8 @@ public class Client {
     private String surnames;
     private String genre;
     private String birthdate;
-    private List<Phone> phones;
-    private List<Address> addresses;
-    private String email;
     private String nationality;
-    
+    private String rating;
+    private BigDecimal amountOwed;
+    private BigDecimal alternateRating;
 }

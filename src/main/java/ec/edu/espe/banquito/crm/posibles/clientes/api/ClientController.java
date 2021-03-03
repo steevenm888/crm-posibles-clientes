@@ -13,22 +13,24 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRS;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRQ;
-import ec.edu.espe.banquito.crm.posibles.clientes.enums.GenreEnum;
+import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
 import org.springframework.web.bind.annotation.RequestBody;
 import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
 import java.util.ArrayList;
 import java.util.List;
-import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientNamesSurnamesRQ;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestParam;
+import kong.unirest.GenericType;
+import kong.unirest.Unirest;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 /**
  *
@@ -37,20 +39,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/posibles-clientes/cliente")
+@RequestMapping("/api/possible-clients")
 @Slf4j
 public class ClientController {
+
     private final ClientService service;
-    
+
     public ClientController(ClientService service) {
         this.service = service;
     }
-    
+
     @GetMapping
-    @ApiOperation(value = "Listar todos los posibles clientes")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Todos los posibles clientes listados"),
-                            @ApiResponse(code = 204, message = "No existe ningún registro a mostrarse"),
-                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    @ApiOperation(value = "List all possible clients")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "All possible clients listed"),
+                            @ApiResponse(code = 204, message = "There are no registries to show"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
     public ResponseEntity<List<Client>> listarTodos() {
         try {
             return ResponseEntity.ok(this.service.getAllClientes());
@@ -61,12 +64,13 @@ public class ClientController {
         }
     }
     
-    @GetMapping(path = "/id/{id}")
+    @GetMapping(path = "/{id}")
     @ApiOperation(value = "Listar posible cliente por su id")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Posible cliente con el id enviado fue encontrado"),
-                            @ApiResponse(code = 404, message = "No se encontró ningún posible cliente con el id enviado"),
-                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible client with sent id found"),
+                            @ApiResponse(code = 404, message = "No possible client with sent id found"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
     public ResponseEntity<Client> getById(@PathVariable("id") String id) {
+
         try {
             return ResponseEntity.ok(this.service.getClientById(id));
         } catch (DocumentNotFoundException e) {
@@ -76,12 +80,12 @@ public class ClientController {
         }
     }
     
-    @GetMapping(path = "/cedula/{identification}")
+    @GetMapping(path = "/identification/{identification}")
     @ApiOperation(value = "Listar posible cliente por su cedula")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Posible cliente con la cedula enviado fue encontrado"),
-                            @ApiResponse(code = 404, message = "No se encontró ningún posible cliente con el id enviado"),
-                            @ApiResponse(code = 500, message = "Error interno del servidor")})
-    public ResponseEntity<Client> getByCedula(@PathVariable("identification") String identification) {
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible client with sent identification found"),
+                            @ApiResponse(code = 404, message = "No possible client found with sent id"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
+    public ResponseEntity<Client> getByIdentification(@PathVariable("identification") String identification) {
         try {
             return ResponseEntity.ok(this.service.getClientByIdentification(identification));
         } catch (DocumentNotFoundException e) {
@@ -90,55 +94,27 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     @PostMapping
-    @ApiOperation(value = "Crear posible cliente")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Posible cliente creado"),
-                            @ApiResponse(code = 400, message = "Datos enviados erroneamente, error al insertar"),
-                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    @ApiOperation(value = "Create possible client")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Client created successfully"),
+        @ApiResponse(code = 400, message = "The privided data is not correct"),
+        @ApiResponse(code = 404, message = "Not Found"),
+        @ApiResponse(code = 500, message = "Internalserver error")})
     public ResponseEntity crear(@RequestBody ClientRQ client) {
         try {
-            this.service.createClient(Client.builder()
-                                      .identification(client.getIdentification())
-                                      .names(client.getNames())
-                                      .surnames(client.getSurnames())
-                                      .genre(client.getGenre())
-                                      .birthdate(client.getBirthdate())
-                                      .phones(client.getPhones())
-                                      .addresses(client.getAddresses())
-                                      .email(client.getEmail())
-                                      .nationality(client.getNationality()).build());
+            this.service.crearCliente(Client.builder()
+                    .identification(client.getIdentification())
+                    .names(client.getNames())
+                    .surnames(client.getSurnames())
+                    .genre(client.getGenre())
+                    .birthdate(client.getBirthdate())
+                    .nationality(client.getNationality()).build());
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
             return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    
-    @PostMapping("/varios")
-    @ApiOperation(value = "Crear posible cliente")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Lista de posibles clientes guardada"),
-                            @ApiResponse(code = 400, message = "Lista de posibles clientes con problemas"),
-                            @ApiResponse(code = 500, message = "Error interno del servidor")})
-    public ResponseEntity createSeveral(@RequestBody List<ClientRQ> clients) {
-        try {
-            List<Client> clientsList = new ArrayList<>();
-            for (ClientRQ client : clients) {
-                clientsList.add(Client.builder()
-                                      .identification(client.getIdentification())
-                                      .names(client.getNames())
-                                      .surnames(client.getSurnames())
-                                      .genre(GenreEnum.valueOf(client.getGenre()).getCode())
-                                      .birthdate(client.getBirthdate())
-                                      .phones(client.getPhones())
-                                      .addresses(client.getAddresses())
-                                      .email(client.getEmail())
-                                      .nationality(client.getNationality()).build());
-            }
-            this.service.createSeveralClients(clientsList);
-            return ResponseEntity.ok().build();
-        } catch (InsertException e) {
+        } catch (DocumentNotFoundException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -146,10 +122,10 @@ public class ClientController {
     }
     
     @GetMapping("/byEmail")
-    @ApiOperation(value = "Obtener lista de posibles clientes por email")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Lista de posibles clientes por email encontrada"),
-                            @ApiResponse(code = 404, message = "Clientes con el email especificado no encontrados"),
-                            @ApiResponse(code = 500, message = "Error interno del servidor")})
+    @ApiOperation(value = "Get possible clients by email")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible clients with sent email found"),
+                            @ApiResponse(code = 404, message = "Possible clients with sent email not found"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
     public ResponseEntity<List<Client>> getClientsByEmail(@RequestParam String email) {
         try {
             log.info("Retrived all clients with email: {}", email);
@@ -160,23 +136,24 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
-    @GetMapping("/byNamesSurnames")
-    @ApiOperation(value = "Obtener lista de posibles clientes por nombres y apellidos")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Lista de posibles clientes por nombres y apellidos no encontrada"),
-                            @ApiResponse(code = 404, message = "Clientes con el email especificado no encontrados"),
-                            @ApiResponse(code = 500, message = "Error interno del servidor")})
-    public ResponseEntity<List<Client>> getClientsByNamesSrunames(@RequestBody ClientNamesSurnamesRQ clientNamesSurnames) {
+
+    @GetMapping("/byNamesSurnames/{names}-{surnames}")
+    @ApiOperation(value = "Find client name and surname")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Registries Found"),
+        @ApiResponse(code = 400, message = "Not enough data to perform the search"),
+        @ApiResponse(code = 404, message = "Not Found")})
+    public ResponseEntity<List<Client>> getClientsByNamesSrunames(@PathVariable String names, @PathVariable String surnames) {
         try {
-            if(clientNamesSurnames.getNames() != null && clientNamesSurnames.getSurnames() == null){
-                log.info("Retrieved all clients named as {}", clientNamesSurnames.getNames());
-                return ResponseEntity.ok(this.service.getClientsByNames(clientNamesSurnames.getNames()));
-            } else if(clientNamesSurnames.getNames() == null && clientNamesSurnames.getSurnames() != null) {
-                log.info("Retrieved all clients with {} in it's surnames", clientNamesSurnames.getSurnames());
-                return ResponseEntity.ok(this.service.getClientsBySurnames(clientNamesSurnames.getSurnames()));
-            } else if(clientNamesSurnames.getNames() != null && clientNamesSurnames.getSurnames() != null) {
-                log.info("Retrieved all clients with {} {} in it's names and surnames", clientNamesSurnames.getSurnames());
-                return ResponseEntity.ok(this.service.getClientByNamesAndSurnames(clientNamesSurnames.getNames(), clientNamesSurnames.getSurnames()));
+            if (names != null && surnames == null) {
+                log.info("Retrieved all clients named as {}", names);
+                return ResponseEntity.ok(this.service.getClientsByNames(names));
+            } else if (names == null && surnames != null) {
+                log.info("Retrieved all clients with {} in it's surnames", surnames);
+                return ResponseEntity.ok(this.service.getClientsBySurnames(surnames));
+            } else if (names != null && surnames != null) {
+                log.info("Retrieved all clients with {} {} in it's names and surnames", names, surnames);
+                return ResponseEntity.ok(this.service.getClientByNamesAndSurnames(names, surnames));
             } else {
                 log.error("Not enough data to perform the search");
                 return ResponseEntity.badRequest().build();
@@ -186,5 +163,47 @@ public class ClientController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @PostMapping("/createClientsFromBuroRating")
+    @ApiOperation(value = "Create various clients from Buro with given rating")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Created successfully"),
+        @ApiResponse(code = 400, message = "The data passed is not correct in format"),
+        @ApiResponse(code = 404, message = "No data found in Buro")})
+    public ResponseEntity createClientsFromBuro(@RequestBody String rating) {
+        List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/calificacion/{rating}")
+                .routeParam("rating", rating)
+                .asObject(new GenericType<List<BuroRS>>() {
+                })
+                .getBody();
+        ResponseEntity response;
+        if (responseBody != null && responseBody.size() > 0) {
+            List<Client> clientsList = new ArrayList<>();
+            for (BuroRS client : responseBody) {
+                clientsList.add(Client.builder()
+                        .identification(client.getPersona().getCedula())
+                        .names(client.getPersona().getNombres())
+                        .surnames(client.getPersona().getApellidos())
+                        .genre(client.getPersona().getGenero())
+                        .birthdate(client.getPersona().getFechaNacimiento())
+                        .nationality(client.getPersona().getNacionalidad().getNombre())
+                        .rating(client.getCalificacion())
+                        .amountOwed(client.getCantidadAdeudada())
+                        .alternateRating(client.getCalificacionAlterna())
+                        .build());
+            }
+            try {
+                this.service.crearVariosClientes(clientsList);
+                response = ResponseEntity.ok().build();
+            } catch (InsertException e) {
+                response = ResponseEntity.badRequest().build();
+            } catch (DocumentAlreadyExistsException e) {
+                response = ResponseEntity.badRequest().build();
+            }
+        } else {
+            response = ResponseEntity.notFound().build();;
+        }
+        return response;
     }
 }
