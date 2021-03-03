@@ -30,12 +30,17 @@ public class ClientService {
     public ClientService(ClientRepository clientRepo) {
         this.clientRepo = clientRepo;
     }
-
-    public List<Client> listarClientes() {
-        return this.clientRepo.findAll();
+    
+    public List<Client> getAllClientes() throws NotFoundException {
+        List<Client> clients = this.clientRepo.findAll();
+        if(!clients.isEmpty()) {
+            return clients;
+        } else {
+            throw new NotFoundException("There are no clients in the data base yet.");
+        }
     }
 
-    public void crearCliente(Client client) throws InsertException, DocumentNotFoundException {
+    public void createClient(Client client) throws InsertException, DocumentNotFoundException {
         Optional<Client> searchedClient = this.clientRepo.findByIdentification(client.getIdentification());
         if (searchedClient.isPresent()) {
             log.error("Can't insert a new client when the identification {} already exists in another registry");
@@ -48,7 +53,7 @@ public class ClientService {
         }
     }
 
-    public void crearVariosClientes(List<Client> clients) throws InsertException, DocumentAlreadyExistsException {
+    public void createSeveralClients(List<Client> clients) throws InsertException, DocumentAlreadyExistsException {
         Integer originalClientsSize = clients.size();
         List<String> identifications = new ArrayList<>();
         List<Client> clientsToRemove = new ArrayList<>();
@@ -76,16 +81,16 @@ public class ClientService {
         }
     }
 
-    public Client obtenerClientePorId(String id) throws DocumentNotFoundException {
+    public Client getClientById(String id) throws DocumentNotFoundException {
         Optional<Client> client = this.clientRepo.findById(id);
         if (client.isPresent()) {
             return client.get();
         } else {
-            throw new DocumentNotFoundException("No se encontro el cliente con id: " + id);
+            throw new DocumentNotFoundException("Couldn't find a client with the id: "+id);
         }
     }
 
-    public Client obtenerClientePorCedula(String identification) throws DocumentNotFoundException {
+    public Client getClientByIdentification(String identification) throws DocumentNotFoundException {
         Optional<Client> client = this.clientRepo.findByIdentification(identification);
         if (client.isPresent()) {
             return client.get();

@@ -26,6 +26,8 @@ import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestParam;
 import kong.unirest.GenericType;
 import kong.unirest.Unirest;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  *
  * @author esteban
  */
+
 @CrossOrigin
 @RestController
 @RequestMapping("/api/possible-clients")
@@ -47,37 +50,48 @@ public class ClientController {
     }
 
     @GetMapping
-    @ApiOperation(value = "List clients")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Registries Found"),
-        @ApiResponse(code = 404, message = "Not Found")})
-    public ResponseEntity listarTodos() {
-        return ResponseEntity.ok(this.service.listarClientes());
-    }
-
-    @GetMapping(path = "/{id}")
-    @ApiOperation(value = "Find client by id")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Registries Found"),
-        @ApiResponse(code = 404, message = "Not Found")})
-    public ResponseEntity<Client> listarPorId(@PathVariable("id") String id) {
+    @ApiOperation(value = "List all possible clients")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "All possible clients listed"),
+                            @ApiResponse(code = 204, message = "There are no registries to show"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
+    public ResponseEntity<List<Client>> listarTodos() {
         try {
-            return ResponseEntity.ok(this.service.obtenerClientePorId(id));
-        } catch (DocumentNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(this.service.getAllClientes());
+        } catch (NotFoundException e) {
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    
+    @GetMapping(path = "/{id}")
+    @ApiOperation(value = "Listar posible cliente por su id")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible client with sent id found"),
+                            @ApiResponse(code = 404, message = "No possible client with sent id found"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
+    public ResponseEntity<Client> getById(@PathVariable("id") String id) {
 
-    @GetMapping(path = "/identification/{identification}")
-    @ApiOperation(value = "Find client by identification")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Registries Found"),
-        @ApiResponse(code = 404, message = "Not Found")})
-    public ResponseEntity<Client> listarPorCedula(@PathVariable("identification") String identification) {
         try {
-            return ResponseEntity.ok(this.service.obtenerClientePorCedula(identification));
+            return ResponseEntity.ok(this.service.getClientById(id));
         } catch (DocumentNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception  e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping(path = "/identification/{identification}")
+    @ApiOperation(value = "Listar posible cliente por su cedula")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible client with sent identification found"),
+                            @ApiResponse(code = 404, message = "No possible client found with sent id"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
+    public ResponseEntity<Client> getByIdentification(@PathVariable("identification") String identification) {
+        try {
+            return ResponseEntity.ok(this.service.getClientByIdentification(identification));
+        } catch (DocumentNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -85,8 +99,9 @@ public class ClientController {
     @ApiOperation(value = "Create possible client")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Client created successfully"),
-        @ApiResponse(code = 400, message = "The data passed is not correct"),
-        @ApiResponse(code = 404, message = "Not Found")})
+        @ApiResponse(code = 400, message = "The privided data is not correct"),
+        @ApiResponse(code = 404, message = "Not Found"),
+        @ApiResponse(code = 500, message = "Internalserver error")})
     public ResponseEntity crear(@RequestBody ClientRQ client) {
         try {
             this.service.crearCliente(Client.builder()
@@ -101,6 +116,24 @@ public class ClientController {
             return ResponseEntity.badRequest().build();
         } catch (DocumentNotFoundException e) {
             return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping("/byEmail")
+    @ApiOperation(value = "Get possible clients by email")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Possible clients with sent email found"),
+                            @ApiResponse(code = 404, message = "Possible clients with sent email not found"),
+                            @ApiResponse(code = 500, message = "Internal server error")})
+    public ResponseEntity<List<Client>> getClientsByEmail(@RequestParam String email) {
+        try {
+            log.info("Retrived all clients with email: {}", email);
+            return ResponseEntity.ok(this.service.getClientByEmail(email));
+        } catch (NotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -127,6 +160,8 @@ public class ClientController {
             }
         } catch (NotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
