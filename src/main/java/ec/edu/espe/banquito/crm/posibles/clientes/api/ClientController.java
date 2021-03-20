@@ -151,11 +151,12 @@ public class ClientController {
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
     public ResponseEntity<List<Client>> createClientsFromBuroRating(@RequestBody String rating) {
-        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/{rating}")
+        List<BuroRS> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/{rating}")
                 .routeParam("rating", rating)
                 .asObject(new GenericType<List<BuroRs>>() {
                 })
                 .getBody();
+        log.info("{}" + responseBody);
         ResponseEntity response;
         if (responseBody != null && responseBody.size() > 0) {
             List<Client> clientsList = this.service.transformBuroRsToClient(responseBody);
@@ -179,7 +180,7 @@ public class ClientController {
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
     public ResponseEntity<List<Client>> createClientsFromBuroOwed(@RequestBody BigDecimal amountOwed) {
-        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/{amountOwed}")
+        List<BuroRS> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/{amountOwed}")
                 .routeParam("amountOwed", amountOwed.toString())
                 .asObject(new GenericType<List<BuroRs>>() {
                 })
@@ -206,8 +207,8 @@ public class ClientController {
         @ApiResponse(code = 200, message = "Created successfully"),
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
-    public ResponseEntity<List<Client>> createClientsFromBuroOwedAndRating(@RequestBody RatingOwedRq ratingOwedRq) {
-        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+    public ResponseEntity<List<Client>> createClientsFromBuroOwedAndRating(@RequestBody RatingOwedRQ ratingOwedRq) {
+        List<BuroRS> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
                 .queryString("calificacion", ratingOwedRq.getRating())
                 .queryString("cantidadAdeudada", ratingOwedRq.getAmountOwed())
                 .asObject(new GenericType<List<BuroRs>>() {
