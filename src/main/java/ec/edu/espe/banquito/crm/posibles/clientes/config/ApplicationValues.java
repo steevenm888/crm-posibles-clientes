@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ec.edu.espe.banquito.crm.posibles.clientes.config;
 
 import lombok.Getter;
@@ -10,22 +5,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/**
- *
- * @author esteban
- */
 @Component
 @Getter
 public class ApplicationValues {
-    
+
     private final String mongoHost;
-    private final String mongoDB;
+    private final String mongoDb;
 
     @Autowired
-    public ApplicationValues(@Value("${clients.mongo.host}") String mongoHost, @Value("${clients.mongo.db}") String mongoDB) {
+    public ApplicationValues(
+            @Value("${clients.mongo.host}") String mongoHost,
+            @Value("${clients.mongo.db}") String mongoDb) {
         this.mongoHost = mongoHost;
-        this.mongoDB = mongoDB;
+        this.mongoDb = mongoDb;
     }
-    
-    
+
 }

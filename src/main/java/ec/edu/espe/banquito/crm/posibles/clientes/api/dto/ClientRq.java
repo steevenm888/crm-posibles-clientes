@@ -1,23 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ec.edu.espe.banquito.crm.posibles.clientes.api.dto;
 
+import ec.edu.espe.banquito.crm.posibles.clientes.model.Address;
+import ec.edu.espe.banquito.crm.posibles.clientes.model.Phone;
 import java.util.List;
 import lombok.Data;
-import ec.edu.espe.banquito.crm.posibles.clientes.model.Phone;
-import ec.edu.espe.banquito.crm.posibles.clientes.model.Address;
-import java.util.Date;
-
-/**
- *
- * @author esteban
- */
 
 @Data
-public class ClientRQ {
+public class ClientRq {
     private String id;
     private String identification;
     private String names;

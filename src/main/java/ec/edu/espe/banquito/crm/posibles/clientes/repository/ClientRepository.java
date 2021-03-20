@@ -1,20 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ec.edu.espe.banquito.crm.posibles.clientes.repository;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
 import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-/**
- *
- * @author esteban
- */
 public interface ClientRepository extends MongoRepository<Client, String> {
 
     List<Client> findAll();
@@ -25,7 +16,7 @@ public interface ClientRepository extends MongoRepository<Client, String> {
 
     List<Client> findByNamesLike(String names);
 
-    List<Client> findBySurnamesLike(String Surnames);
+    List<Client> findBySurnamesLike(String surnames);
 
     List<Client> findByNamesIgnoringCaseLikeAndSurnamesIgnoringCaseLike(String names, String surnames);
 
