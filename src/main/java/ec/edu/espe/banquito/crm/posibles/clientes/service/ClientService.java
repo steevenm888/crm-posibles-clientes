@@ -136,17 +136,20 @@ public class ClientService {
     public List<Client> transformBuroRsToClient(List<BuroRS> responseBody) {
         List<Client> clientsList = new ArrayList<>();
         for (BuroRS client : responseBody) {
-            clientsList.add(Client.builder()
-                    .identification(client.getPersona().getCedula())
-                    .names(client.getPersona().getNombres())
-                    .surnames(client.getPersona().getApellidos())
-                    .genre(client.getPersona().getGenero())
-                    .birthdate(client.getPersona().getFechaNacimiento())
-                    .nationality(client.getPersona().getNacionalidad().getNombre())
-                    .rating(client.getCalificacion())
-                    .amountOwed(client.getCantidadAdeudada())
-                    .alternateRating(client.getCalificacionAlterna())
-                    .build());
+            if (client.getPersona() != null) {
+                clientsList.add(Client.builder()
+                        .identification(client.getPersona().getCedula())
+                        .names(client.getPersona().getNombres())
+                        .surnames(client.getPersona().getApellidos())
+                        .genre(client.getPersona().getGenero())
+                        .birthdate(client.getPersona().getFechaNacimiento())
+                        .nationality(client.getPersona().getNacionalidad().getNombre())
+                        .rating(client.getCalificacion())
+                        .amountOwed(client.getCantidadAdeudada())
+                        .alternateRating(client.getCalificacionAlterna())
+                        .build());
+            }
+
         }
         return clientsList;
     }
