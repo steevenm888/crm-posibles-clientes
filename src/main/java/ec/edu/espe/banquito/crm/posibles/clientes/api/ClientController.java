@@ -1,43 +1,32 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ec.edu.espe.banquito.crm.posibles.clientes.api;
 
-import ec.edu.espe.banquito.crm.posibles.clientes.service.ClientService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRS;
-import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRQ;
-import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.RatingOwedRQ;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRs;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRq;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.RatingOwedRq;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
-import org.springframework.web.bind.annotation.RequestBody;
-import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
-import java.util.ArrayList;
-import java.util.List;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
+import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
+import ec.edu.espe.banquito.crm.posibles.clientes.service.ClientService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.math.BigDecimal;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestParam;
+import java.util.List;
 import kong.unirest.GenericType;
 import kong.unirest.Unirest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- *
- * @author esteban
- */
 @CrossOrigin
 @RestController
 @RequestMapping("/api/possible-clients")
@@ -106,7 +95,7 @@ public class ClientController {
         @ApiResponse(code = 400, message = "The privided data is not correct"),
         @ApiResponse(code = 404, message = "Not Found"),
         @ApiResponse(code = 500, message = "Internalserver error")})
-    public ResponseEntity crear(@RequestBody ClientRQ client) {
+    public ResponseEntity crear(@RequestBody ClientRq client) {
         try {
             this.service.createClient(Client.builder()
                     .identification(client.getIdentification())
@@ -131,7 +120,9 @@ public class ClientController {
         @ApiResponse(code = 200, message = "Registries Found"),
         @ApiResponse(code = 400, message = "Not enough data to perform the search"),
         @ApiResponse(code = 404, message = "Not Found")})
-    public ResponseEntity<List<Client>> getClientsByNamesSrunames(@PathVariable String names, @PathVariable String surnames) {
+    public ResponseEntity<List<Client>> getClientsByNamesSrunames(
+            @PathVariable String names,
+            @PathVariable String surnames) {
         try {
             if (names != null && surnames == null) {
                 log.info("Retrieved all clients named as {}", names);
@@ -160,9 +151,9 @@ public class ClientController {
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
     public ResponseEntity<List<Client>> createClientsFromBuroRating(@RequestBody String rating) {
-        List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/calificacion/{rating}")
+        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/{rating}")
                 .routeParam("rating", rating)
-                .asObject(new GenericType<List<BuroRS>>() {
+                .asObject(new GenericType<List<BuroRs>>() {
                 })
                 .getBody();
         ResponseEntity response;
@@ -188,9 +179,9 @@ public class ClientController {
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
     public ResponseEntity<List<Client>> createClientsFromBuroOwed(@RequestBody BigDecimal amountOwed) {
-        List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/cantidadAdeudada/{amountOwed}")
+        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/{amountOwed}")
                 .routeParam("amountOwed", amountOwed.toString())
-                .asObject(new GenericType<List<BuroRS>>() {
+                .asObject(new GenericType<List<BuroRs>>() {
                 })
                 .getBody();
         ResponseEntity response;
@@ -215,11 +206,11 @@ public class ClientController {
         @ApiResponse(code = 200, message = "Created successfully"),
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
-    public ResponseEntity<List<Client>> createClientsFromBuroOwedAndRating(@RequestBody RatingOwedRQ ratingOwedRq) {
-        List<BuroRS> responseBody = Unirest.get("http://3.227.175.235:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+    public ResponseEntity<List<Client>> createClientsFromBuroOwedAndRating(@RequestBody RatingOwedRq ratingOwedRq) {
+        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
                 .queryString("calificacion", ratingOwedRq.getRating())
                 .queryString("cantidadAdeudada", ratingOwedRq.getAmountOwed())
-                .asObject(new GenericType<List<BuroRS>>() {
+                .asObject(new GenericType<List<BuroRs>>() {
                 })
                 .getBody();
         log.info("Data retrieved from buro {}", responseBody);
