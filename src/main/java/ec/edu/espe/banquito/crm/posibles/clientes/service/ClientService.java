@@ -1,27 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ec.edu.espe.banquito.crm.posibles.clientes.service;
 
-import ec.edu.espe.banquito.crm.posibles.clientes.repository.ClientRepository;
-import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
-import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRS;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRs;
+import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
-import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
+import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
+import ec.edu.espe.banquito.crm.posibles.clientes.repository.ClientRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-/**
- *
- * @author esteban
- */
 @Service
 @Slf4j
 public class ClientService {
@@ -54,7 +45,9 @@ public class ClientService {
         }
     }
 
-    public List<Client> createSeveralClients(List<Client> clients) throws InsertException, DocumentAlreadyExistsException {
+    public List<Client> createSeveralClients(
+            List<Client> clients) throws InsertException,
+            DocumentAlreadyExistsException {
         Integer originalClientsSize = clients.size();
         List<String> identifications = new ArrayList<>();
         List<Client> clientsToRemove = new ArrayList<>();
@@ -70,16 +63,18 @@ public class ClientService {
             this.clientRepo.saveAll(clients);
             if (clients.size() < originalClientsSize) {
                 log.warn("Couldn't insert all the registries, only {} "
-                        + "There was problems with the following identifications which already exist in other registries: {}",
+                        + "There was problems with the following identifications "
+                        + "which already exist in other registries: {}",
                         clients.size(), identifications.toString());
-                /*throw new DocumentAlreadyExistsException("Couldn't insert all the registries, only " + clients.size() + ""
-                        + "There was problems with the following identifications which already exist in other registries:"
-                        + identifications.toString());*/
             }
             return clients;
         } else {
             log.error("Can't save more than 100 documents at a time");
-            throw new InsertException("Client", "Can't save the documents", new Throwable("Can't save more than 100 documents at a time, number of sent registries: " + clients.size()));
+            throw new InsertException(
+                    "Client",
+                    "Can't save the documents",
+                    new Throwable("Can't save more than 100 documents at a time, number of sent registries: " 
+                            + clients.size()));
         }
     }
 
@@ -129,27 +124,29 @@ public class ClientService {
             return clients;
         } else {
             log.info("Couldn't find a client that matches {} {} in it's names and surnames");
-            throw new NotFoundException("Couldn't find a client that matches " + names + " " + surnames + " in it's names and surnames");
+            throw new NotFoundException(
+                    "Couldn't find a client that matches " 
+                            + names 
+                            + " " 
+                            + surnames 
+                            + " in it's names and surnames");
         }
     }
 
-    public List<Client> transformBuroRsToClient(List<BuroRS> responseBody) {
+    public List<Client> transformBuroRsToClient(List<BuroRs> responseBody) {
         List<Client> clientsList = new ArrayList<>();
-        for (BuroRS client : responseBody) {
-            if (client.getPersona() != null) {
-                clientsList.add(Client.builder()
-                        .identification(client.getPersona().getCedula())
-                        .names(client.getPersona().getNombres())
-                        .surnames(client.getPersona().getApellidos())
-                        .genre(client.getPersona().getGenero())
-                        .birthdate(client.getPersona().getFechaNacimiento())
-                        .nationality(client.getPersona().getNacionalidad().getNombre())
-                        .rating(client.getCalificacion())
-                        .amountOwed(client.getCantidadAdeudada())
-                        .alternateRating(client.getCalificacionAlterna())
-                        .build());
-            }
-
+        for (BuroRs client : responseBody) {
+            clientsList.add(Client.builder()
+                    .identification(client.getPersona().getCedula())
+                    .names(client.getPersona().getNombres())
+                    .surnames(client.getPersona().getApellidos())
+                    .genre(client.getPersona().getGenero())
+                    .birthdate(client.getPersona().getFechaNacimiento())
+                    .nationality(client.getPersona().getNacionalidad().getNombre())
+                    .rating(client.getCalificacion())
+                    .amountOwed(client.getCantidadAdeudada())
+                    .alternateRating(client.getCalificacionAlterna())
+                    .build());
         }
         return clientsList;
     }
