@@ -15,9 +15,9 @@
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>11</java.version>
-        <sonar.projectKey>Shakira19_crm-posibles-clientes</sonar.projectKey>
-        <sonar.organization>crm-banco-banquito</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+         <sonar.projectKey>steevenm888_crm-posibles-clientes</sonar.projectKey>
+         <sonar.organization>steevenm888</sonar.organization>
+         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
     <dependencies>
         <dependency>
