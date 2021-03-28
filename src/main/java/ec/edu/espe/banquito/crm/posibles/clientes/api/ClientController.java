@@ -107,7 +107,7 @@ public class ClientController {
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
             return ResponseEntity.badRequest().build();
-        } catch (DocumentNotFoundException e) {
+        } catch (DocumentAlreadyExistsException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

@@ -32,11 +32,13 @@ public class ClientService {
         }
     }
 
-    public void createClient(Client client) throws InsertException, DocumentNotFoundException {
+    public void createClient(Client client) throws InsertException, DocumentAlreadyExistsException {
         Optional<Client> searchedClient = this.clientRepo.findByIdentification(client.getIdentification());
         if (searchedClient.isPresent()) {
             log.error("Can't insert a new client when the identification {} already exists in another registry");
-            throw new DocumentNotFoundException("The client with id " + client.getIdentification() + " already exists");
+            throw new DocumentAlreadyExistsException("The client with id " 
+                    + client.getIdentification() 
+                    + " already exists");
         } else {
             Client clientSaved = this.clientRepo.save(client);
             if (clientSaved == null) {
