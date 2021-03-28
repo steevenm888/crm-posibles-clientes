@@ -244,7 +244,6 @@ public class ClientServiceTests {
         List<BuroRs> newListBuroRs = new ArrayList<>();
         newListBuroRs.add(buroRsSample1);
         newListBuroRs.add(buroRsSample2);
-        Logger.getLogger(ClientServiceTests.class.getName()).log(Level.SEVERE, null, this.service.transformBuroRsToClient(newListBuroRs).toString());
         Assertions.assertEquals(clientList, this.service.transformBuroRsToClient(newListBuroRs));
     }
     
