@@ -4,19 +4,21 @@ import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRs;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRq;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.PaisRs;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.PersonaRs;
+import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.RatingOwedRq;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.NotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.model.Client;
-import ec.edu.espe.banquito.crm.posibles.clientes.repository.ClientRepository;
 import ec.edu.espe.banquito.crm.posibles.clientes.service.ClientService;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import kong.unirest.GenericType;
-import kong.unirest.Unirest;
+import kong.unirest.HttpMethod;
+import kong.unirest.MockClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -143,6 +144,16 @@ public class ClientControllerTests {
     @Test
     public void GivenClientRqMalFormedReturnResponseEntityBadRequest() {
         ClientRq clientRqSample = new ClientRq();
+        clientRqSample.setAddresses(new ArrayList<>());
+        clientRqSample.setBirthdate(new Date().toString());
+        clientRqSample.setEmail("kscofre@espe.edu.ec");
+        clientRqSample.setId("1");
+        clientRqSample.setIdentification("1724217367");
+        clientRqSample.setNames("KAREN SHAKIRA");
+        clientRqSample.setNationality("ECUATORIANA");
+        clientRqSample.setPhones(new ArrayList<>());
+        clientRqSample.setSurnames("COFRE MALDONADO");
+        
         try {
             doThrow(InsertException.class).when(service).createClient(any());
             Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.crear(clientRqSample));
@@ -208,24 +219,309 @@ public class ClientControllerTests {
         Assertions.assertEquals(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(), controller.getClientsByNamesSrunames("", ""));
     }
     
-//    @Test
-//    public void GivenBuroRatingReturnResponseEntityOkListOfClients() {
-//        PersonaRs personaSample = new PersonaRs();
-//        PaisRs nacionalidadSample = new PaisRs();
-//        personaSample.setNacionalidad(nacionalidadSample);
-//        BuroRs buroRsSample1 = new BuroRs();
-//        buroRsSample1.setPersona(personaSample);
-//        BuroRs buroRsSample2 = new BuroRs();
-//        buroRsSample2.setPersona(personaSample);
-//        List<BuroRs> newListBuroRs = new ArrayList<>();
-//        newListBuroRs.add(buroRsSample1);
-//        newListBuroRs.add(buroRsSample2);
-//        when(Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/{rating}")
-//                .routeParam("rating", "VER")
-//                .asObject(new GenericType<List<BuroRs>>() {
-//                })
-//                .getBody()).thenReturn(newListBuroRs);
-//        Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroRating("VER"));
-//    }
+    @Test
+    public void GivenBuroRatingReturnResponseEntityOkListOfClients() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/VER")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenReturn(clientList);
+            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroRating("VER"));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenBuroRatingReturnResponseEntityBadRequest() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/VER")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenThrow(new InsertException("", ""));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroRating("VER"));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenBuroRatingWithListThatExistsReturnResponseEntityBadRequest() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/VER")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenThrow(new DocumentAlreadyExistsException(""));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroRating("VER"));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenBuroRatingWithEmptyListReturnResponseEntityNotFound() {
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/VER")
+                        .thenReturn(newListBuroRs);
+        try {
+            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroRating("VER"));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedReturnResponseEntityOkListOfClients() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/1000")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenReturn(clientList);
+            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedReturnResponseEntityBadRequest() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/1000")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenThrow(new InsertException("", ""));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedWithListThatExistsReturnResponseEntityBadRequest() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/1000")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenThrow(new DocumentAlreadyExistsException(""));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedWithEmptyListReturnResponseEntityNotFound() {
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/1000")
+                        .thenReturn(newListBuroRs);
+        try {
+            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedAndRatingReturnResponseEntityOkListOfClients() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        RatingOwedRq ratingOwedRq = new RatingOwedRq();
+        ratingOwedRq.setAmountOwed(new BigDecimal(1000));
+        ratingOwedRq.setRating("VER");
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenReturn(clientList);
+            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedAndRatingReturnResponseEntityBadRequest() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        RatingOwedRq ratingOwedRq = new RatingOwedRq("VER", new BigDecimal(1000));
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenThrow(new InsertException("", ""));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedAndRatingWithListThatExistsReturnResponseEntityBadRequest() {
+        PersonaRs personaSample = new PersonaRs();
+        PaisRs nacionalidadSample = new PaisRs();
+        personaSample.setNacionalidad(nacionalidadSample);
+        BuroRs buroRsSample1 = new BuroRs();
+        buroRsSample1.setPersona(personaSample);
+        BuroRs buroRsSample2 = new BuroRs();
+        buroRsSample2.setPersona(personaSample);
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        newListBuroRs.add(buroRsSample1);
+        newListBuroRs.add(buroRsSample2);
+        
+        RatingOwedRq ratingOwedRq = RatingOwedRq.builder()
+                .amountOwed(new BigDecimal(1000))
+                .rating("VER").build();
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+                        .thenReturn(newListBuroRs);
+        when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
+        try {
+            when(service.createSeveralClients(clientList)).thenThrow(new DocumentAlreadyExistsException(""));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
+    
+    @Test
+    public void GivenAmountOwedAndRatingWithEmptyListReturnResponseEntityNotFound() {
+        List<BuroRs> newListBuroRs = new ArrayList<>();
+        
+        RatingOwedRq ratingOwedRq = new RatingOwedRq();
+        ratingOwedRq.setAmountOwed(new BigDecimal(1000));
+        ratingOwedRq.setRating("VER");
+        
+        MockClient mock = MockClient.register();
+        
+        mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+                        .thenReturn(newListBuroRs);
+        try {
+            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+        } catch (Exception ex) {
+            Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        mock.verifyAll();
+    }
     
 }

@@ -193,7 +193,7 @@ public class ClientController {
             } catch (InsertException e) {
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
-                response = ResponseEntity.notFound().build();
+                response = ResponseEntity.badRequest().build();
             }
         } else {
             response = ResponseEntity.notFound().build();;
