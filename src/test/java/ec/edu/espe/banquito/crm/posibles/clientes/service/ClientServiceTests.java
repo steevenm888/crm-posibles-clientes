@@ -3,6 +3,7 @@ package ec.edu.espe.banquito.crm.posibles.clientes.service;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.BuroRs;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.PaisRs;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.PersonaRs;
+import ec.edu.espe.banquito.crm.posibles.clientes.enums.GenreEnum;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
@@ -67,7 +68,7 @@ public class ClientServiceTests {
                 .alternateRating(BigDecimal.ZERO)
                 .amountOwed(BigDecimal.ZERO)
                 .birthdate(new Date().toString())
-                .genre("FEM")
+                .genre(GenreEnum.FEMENINO.getCode())
                 .identification("1724217367")
                 .nationality("ECUATORIANA")
                 .rating("VER")
@@ -89,7 +90,7 @@ public class ClientServiceTests {
                 .alternateRating(BigDecimal.ZERO)
                 .amountOwed(BigDecimal.ZERO)
                 .birthdate(new Date().toString())
-                .genre("FEM")
+                .genre(GenreEnum.FEMENINO.getCode())
                 .identification("1724217367")
                 .nationality("ECUATORIANA")
                 .rating("VER")
@@ -112,7 +113,7 @@ public class ClientServiceTests {
                 .alternateRating(BigDecimal.ZERO)
                 .amountOwed(BigDecimal.ZERO)
                 .birthdate(new Date().toString())
-                .genre("MAS")
+                .genre(GenreEnum.FEMENINO.getCode())
                 .identification("1723549081")
                 .nationality("ECUATORIANA")
                 .rating("VER")
@@ -124,7 +125,7 @@ public class ClientServiceTests {
                 .alternateRating(BigDecimal.ZERO)
                 .amountOwed(BigDecimal.ZERO)
                 .birthdate(new Date().toString())
-                .genre("MAS")
+                .genre(GenreEnum.FEMENINO.getCode())
                 .identification("1723415267")
                 .nationality("ECUATORIANA")
                 .rating("VER")

@@ -106,6 +106,7 @@ public class ClientController {
                     .nationality(client.getNationality()).build());
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
+            log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
             return ResponseEntity.badRequest().build();
         } catch (DocumentAlreadyExistsException e) {
             return ResponseEntity.badRequest().build();
@@ -163,6 +164,7 @@ public class ClientController {
             try {
                 response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
             } catch (InsertException e) {
+                log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
                 response = ResponseEntity.badRequest().build();
@@ -191,6 +193,7 @@ public class ClientController {
             try {
                 response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
             } catch (InsertException e) {
+                log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
                 response = ResponseEntity.badRequest().build();
@@ -221,6 +224,7 @@ public class ClientController {
             try {
                 response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
             } catch (InsertException e) {
+                log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
                 response = ResponseEntity.badRequest().build();

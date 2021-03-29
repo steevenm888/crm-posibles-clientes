@@ -5,6 +5,7 @@ import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.ClientRq;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.PaisRs;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.PersonaRs;
 import ec.edu.espe.banquito.crm.posibles.clientes.api.dto.RatingOwedRq;
+import ec.edu.espe.banquito.crm.posibles.clientes.enums.GenreEnum;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentAlreadyExistsException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.DocumentNotFoundException;
 import ec.edu.espe.banquito.crm.posibles.clientes.exception.InsertException;
@@ -153,6 +154,8 @@ public class ClientControllerTests {
         clientRqSample.setNationality("ECUATORIANA");
         clientRqSample.setPhones(new ArrayList<>());
         clientRqSample.setSurnames("COFRE MALDONADO");
+        clientRqSample.setGenre(GenreEnum.FEMENINO.getCode());
+        Logger.getLogger(ClientControllerTests.class.getName()).log(Level.INFO, null, GenreEnum.FEMENINO.getDescription());
         
         try {
             doThrow(InsertException.class).when(service).createClient(any());
@@ -248,12 +251,20 @@ public class ClientControllerTests {
     
     @Test
     public void GivenBuroRatingReturnResponseEntityBadRequest() {
-        PersonaRs personaSample = new PersonaRs();
-        PaisRs nacionalidadSample = new PaisRs();
+        PaisRs nacionalidadSample = new PaisRs("", "", "");
+        PersonaRs personaSample = new PersonaRs(
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                nacionalidadSample
+        );
         personaSample.setNacionalidad(nacionalidadSample);
-        BuroRs buroRsSample1 = new BuroRs();
+        BuroRs buroRsSample1 = new BuroRs(personaSample, "", new BigDecimal(0), new BigDecimal(0));
         buroRsSample1.setPersona(personaSample);
-        BuroRs buroRsSample2 = new BuroRs();
+        BuroRs buroRsSample2 = new BuroRs(personaSample, "", new BigDecimal(0), new BigDecimal(0));
         buroRsSample2.setPersona(personaSample);
         List<BuroRs> newListBuroRs = new ArrayList<>();
         newListBuroRs.add(buroRsSample1);
@@ -275,10 +286,24 @@ public class ClientControllerTests {
     
     @Test
     public void GivenBuroRatingWithListThatExistsReturnResponseEntityBadRequest() {
-        PersonaRs personaSample = new PersonaRs();
-        PaisRs nacionalidadSample = new PaisRs();
+        PaisRs nacionalidadSample = PaisRs.builder()
+                .id("")
+                .nombre("")
+                .codAlterno("").build();
+        PersonaRs personaSample = PersonaRs.builder()
+                .apellidos("")
+                .cedula("")
+                .fechaNacimiento(new Date().toString())
+                .genero("")
+                .nacionalidad(nacionalidadSample)
+                .nombreCompleto("")
+                .nombres("").build();
         personaSample.setNacionalidad(nacionalidadSample);
-        BuroRs buroRsSample1 = new BuroRs();
+        BuroRs buroRsSample1 = BuroRs.builder()
+                .persona(personaSample)
+                .calificacion("")
+                .calificacionAlterna(BigDecimal.ZERO)
+                .cantidadAdeudada(BigDecimal.ZERO).build();
         buroRsSample1.setPersona(personaSample);
         BuroRs buroRsSample2 = new BuroRs();
         buroRsSample2.setPersona(personaSample);
