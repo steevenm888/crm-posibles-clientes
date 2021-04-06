@@ -51,9 +51,13 @@ public class JwtControllerTests {
         JwtRequestModel request = new JwtRequestModel();
         request.setUsername("user-crm-possible-clients");
         request.setPassword("espe123.");
-        when(authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(),
+        try {
+            when(authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(),
                             request.getPassword())
             )).thenThrow(new DisabledException(""));
+        } catch (Exception ex) {
+            Logger.getLogger(JwtController.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try {
             Assertions.assertEquals(ResponseEntity.status(HttpStatus.FORBIDDEN).build(), controller.createToken(request));
         } catch (Exception ex) {
@@ -66,9 +70,13 @@ public class JwtControllerTests {
         JwtRequestModel request = new JwtRequestModel();
         request.setUsername("user-crm-possible-clients");
         request.setPassword("espe123.");
-        when(authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(),
+        try {
+            when(authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(),
                             request.getPassword())
             )).thenThrow(new BadCredentialsException(""));
+        } catch (Exception ex) {
+            Logger.getLogger(JwtController.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try {
             Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createToken(request));
         } catch (Exception ex) {
