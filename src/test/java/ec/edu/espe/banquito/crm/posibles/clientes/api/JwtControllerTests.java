@@ -28,19 +28,22 @@ public class JwtControllerTests {
     
     @Mock
     private JwtUserDetailsService service;
-    private AuthenticationManager authManager;
+//    private AuthenticationManager authManager;
     private TokenManager tokenManager;
     
     @InjectMocks
     private JwtController controller;
+    private AuthenticationManager authManager;
     
     @Test
     public void GivenUsernameAndPasswordReturnResponseEntityOkWithToken() {
-        JwtRequestModel request = new JwtRequestModel();
-        request.setUsername("user-crm-possible-clients");
+        JwtRequestModel request = new JwtRequestModel("user-crm", "espe123.");
+        request.setUsername("user-crm");
         request.setPassword("espe123.");
+        JwtResponseModel response = new JwtResponseModel("1234567890abcdefg");
+        Logger.getLogger(JwtController.class.getName()).log(Level.INFO, null, response.getToken());
         try {
-            Assertions.assertEquals(ResponseEntity.ok(new JwtResponseModel("1234567890abcdefg")), controller.createToken(request));
+            Assertions.assertEquals(ResponseEntity.ok(response), controller.createToken(request));
         } catch (Exception ex) {
             Logger.getLogger(JwtController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -48,8 +51,8 @@ public class JwtControllerTests {
     
     @Test
     public void GivenDisabledUserReturnResponseEntityForbidden() {
-        JwtRequestModel request = new JwtRequestModel();
-        request.setUsername("user-crm-possible-clients");
+        JwtRequestModel request = new JwtRequestModel("user-crm", "espe123.");
+        request.setUsername("user-crm");
         request.setPassword("espe123.");
         try {
             when(authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(),
@@ -68,7 +71,7 @@ public class JwtControllerTests {
     @Test
     public void GivenWrongUsernameOrPasswordReturnResponseEntityBadRequest() {
         JwtRequestModel request = new JwtRequestModel();
-        request.setUsername("user-crm-possible-clients");
+        request.setUsername("user-crm-");
         request.setPassword("espe123.");
         try {
             when(authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(),

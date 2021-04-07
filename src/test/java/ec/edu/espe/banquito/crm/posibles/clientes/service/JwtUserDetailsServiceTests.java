@@ -19,10 +19,10 @@ public class JwtUserDetailsServiceTests {
     
     @Test
     public void GivenUsernameReturnUser() {
-        User userSample = new User("user-crm-possible-clients",
+        User userSample = new User("user-crm",
                     "$2a$10$aDDRu4KfnWgWmNt3QfHsoutJBlGpemM/OlcmrN9n4pK25zU5LL0NW",
                     new ArrayList<>());
-        Assertions.assertEquals(userSample, service.loadUserByUsername("user-crm-possible-clients"));
+        Assertions.assertEquals(userSample, service.loadUserByUsername("user-crm"));
     }
     
     @Test

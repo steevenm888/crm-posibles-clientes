@@ -242,7 +242,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenReturn(clientList);
-            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroRating("VER"));
+            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroRating("VER", ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -277,7 +277,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenThrow(new InsertException("", ""));
-            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroRating("VER"));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroRating("VER", ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -318,7 +318,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenThrow(new DocumentAlreadyExistsException(""));
-            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroRating("VER"));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroRating("VER", ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -334,7 +334,7 @@ public class ClientControllerTests {
         mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/VER")
                         .thenReturn(newListBuroRs);
         try {
-            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroRating("VER"));
+            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroRating("VER", ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -361,7 +361,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenReturn(clientList);
-            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroOwed(new BigDecimal(1000), ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -388,7 +388,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenThrow(new InsertException("", ""));
-            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000), ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -415,7 +415,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenThrow(new DocumentAlreadyExistsException(""));
-            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000), ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -431,7 +431,7 @@ public class ClientControllerTests {
         mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/1000")
                         .thenReturn(newListBuroRs);
         try {
-            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000)));
+            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroOwed(new BigDecimal(1000), ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -462,7 +462,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenReturn(clientList);
-            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+            Assertions.assertEquals(ResponseEntity.ok(clientList), controller.createClientsFromBuroOwedAndRating(ratingOwedRq, ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -491,7 +491,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenThrow(new InsertException("", ""));
-            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq, ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -522,7 +522,7 @@ public class ClientControllerTests {
         when(service.transformBuroRsToClient(newListBuroRs)).thenReturn(clientList);
         try {
             when(service.createSeveralClients(clientList)).thenThrow(new DocumentAlreadyExistsException(""));
-            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+            Assertions.assertEquals(ResponseEntity.badRequest().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq, ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -542,7 +542,7 @@ public class ClientControllerTests {
         mock.expect(HttpMethod.GET, "http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
                         .thenReturn(newListBuroRs);
         try {
-            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq));
+            Assertions.assertEquals(ResponseEntity.notFound().build(), controller.createClientsFromBuroOwedAndRating(ratingOwedRq, ""));
         } catch (Exception ex) {
             Logger.getLogger(ClientControllerTests.class.getName()).log(Level.SEVERE, null, ex);
         }
