@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin
@@ -106,8 +107,9 @@ public class ClientController {
                     .nationality(client.getNationality()).build());
             return ResponseEntity.ok().build();
         } catch (InsertException e) {
+            log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
             return ResponseEntity.badRequest().build();
-        } catch (DocumentNotFoundException e) {
+        } catch (DocumentAlreadyExistsException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -150,9 +152,11 @@ public class ClientController {
         @ApiResponse(code = 200, message = "Created successfully"),
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
-    public ResponseEntity<List<Client>> createClientsFromBuroRating(@RequestBody String rating) {
-        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacion/{rating}")
+    public ResponseEntity<List<Client>> createClientsFromBuroRating(@RequestBody String rating,
+            @RequestParam String token) {
+        List<BuroRs> responseBody = Unirest.get("http://52.250.12.217:8082/api/bbConsultas/buro/calificacion/{rating}")
                 .routeParam("rating", rating)
+                .header("Authentication", "Bearer "+token)
                 .asObject(new GenericType<List<BuroRs>>() {
                 })
                 .getBody();
@@ -163,6 +167,7 @@ public class ClientController {
             try {
                 response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
             } catch (InsertException e) {
+                log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
                 response = ResponseEntity.badRequest().build();
@@ -179,9 +184,11 @@ public class ClientController {
         @ApiResponse(code = 200, message = "Created successfully"),
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
-    public ResponseEntity<List<Client>> createClientsFromBuroOwed(@RequestBody BigDecimal amountOwed) {
-        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/cantidadAdeudada/{amountOwed}")
+    public ResponseEntity<List<Client>> createClientsFromBuroOwed(@RequestBody BigDecimal amountOwed, 
+            @RequestParam String token) {
+        List<BuroRs> responseBody = Unirest.get("http://52.250.12.217:8082/api/bbConsultas/buro/cantidadAdeudada/{amountOwed}")
                 .routeParam("amountOwed", amountOwed.toString())
+                .header("Authentication", "Bearer "+token)
                 .asObject(new GenericType<List<BuroRs>>() {
                 })
                 .getBody();
@@ -191,9 +198,10 @@ public class ClientController {
             try {
                 response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
             } catch (InsertException e) {
+                log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
-                response = ResponseEntity.notFound().build();
+                response = ResponseEntity.badRequest().build();
             }
         } else {
             response = ResponseEntity.notFound().build();;
@@ -207,9 +215,11 @@ public class ClientController {
         @ApiResponse(code = 200, message = "Created successfully"),
         @ApiResponse(code = 400, message = "The data passed is not correct in format"),
         @ApiResponse(code = 404, message = "No data found in Buro")})
-    public ResponseEntity<List<Client>> createClientsFromBuroOwedAndRating(@RequestBody RatingOwedRq ratingOwedRq) {
-        List<BuroRs> responseBody = Unirest.get("http://bbconsultas.southcentralus.cloudapp.azure.com:8082/api/bbConsultas/buro/calificacionAndAdeudada")
+    public ResponseEntity<List<Client>> createClientsFromBuroOwedAndRating(@RequestBody RatingOwedRq ratingOwedRq, 
+            @RequestParam String token) {
+        List<BuroRs> responseBody = Unirest.get("http://52.250.12.217:8082/api/bbConsultas/buro/calificacionAndAdeudada")
                 .queryString("calificacion", ratingOwedRq.getRating())
+                .header("Authentication", "Bearer "+token)
                 .queryString("cantidadAdeudada", ratingOwedRq.getAmountOwed())
                 .asObject(new GenericType<List<BuroRs>>() {
                 })
@@ -221,6 +231,7 @@ public class ClientController {
             try {
                 response = ResponseEntity.ok(this.service.createSeveralClients(clientsList));
             } catch (InsertException e) {
+                log.info("Error ocurrio en la coleccion {}", e.getCollectionName());
                 response = ResponseEntity.badRequest().build();
             } catch (DocumentAlreadyExistsException e) {
                 response = ResponseEntity.badRequest().build();

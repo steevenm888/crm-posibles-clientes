@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 public class JwtUserDetailsService implements UserDetailsService { 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if ("user-crm-possible-clients".equals(username)) {
-            return new User("user-crm-possible-clients",
+        if ("user-crm".equals(username)) {
+            return new User("user-crm",
                     "$2a$10$aDDRu4KfnWgWmNt3QfHsoutJBlGpemM/OlcmrN9n4pK25zU5LL0NW",
                     new ArrayList<>());
         } else {
